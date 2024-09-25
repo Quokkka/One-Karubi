@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>One Karubi计算器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+	header {
+	    position: sticky;
+	    top: 0;
+	    background-color: white;
+	    z-index: 1000;
+	    padding: 10px 0;
+	    border-bottom: 1px solid #ddd;
+	}
+	h1 {
+	    margin-bottom: 10px;
+	}
+	h2#total {
+	    font-size: 1.2em;
+	    font-weight: bold;
+	    margin: 0;
+	}
+	#menu-container {
+	    margin-top: 20px;
+	}
+        button {
+            padding: 5px 10px;
+            margin: 0 2px;
+        }
+        #total {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        .category-header {
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            padding: 10px;
+            font-weight: bold;
+        }
+        .category-header:hover {
+            background-color: #45a049;
+        }
+        .category-content {
+            display: none;
+        }
+        .show {
+            display: table-row-group;
+        }
+    </style>
+</head>
+
+<header>
+    <h1>One Karubi计算器</h1>
+    <h2 id="total">总计: 0 円</h2>
+</header>
+
+<div id="menu-container"></div>
+
+    <script>
+        const menu = [
+    {
+        category: "タン (牛舌)",
+        items: [
+            { nameJa: "牛塩タン", nameZh: "牛盐舌", price: 1078 },
+            { nameJa: "ねぎ塩牛タン", nameZh: "葱盐牛舌", price: 1188 },
+            { nameJa: "にんにく塩 牛タン", nameZh: "蒜盐牛舌", price: 1078 },
+            { nameJa: "塩タン", nameZh: "盐猪舌（精选猪肉制作，经过整形加工）", price: 737 },
+            { nameJa: "ねぎ塩タン", nameZh: "葱盐猪舌（精选猪肉制作，经过整形加工）", price: 792 },
+            { nameJa: "にんにく塩 タン", nameZh: "蒜盐猪舌（精选猪肉制作，经过整形加工）", price: 737 }
+        ]
+    },
+    {
+        category: "黒毛和牛 (黑毛和牛)",
+        items: [
+            { nameJa: "黒毛和牛 上カルビ", nameZh: "黑毛和牛 上等牛小排", price: 1408 },
+            { nameJa: "黒毛和牛 上カルビおろしポン酢", nameZh: "黑毛和牛 上等牛小排萝卜泥柚子醋", price: 1518 },
+            { nameJa: "黒毛和牛 上カルビ焼きすき", nameZh: "黑毛和牛 上等牛小排烤寿喜烧", price: 1408 },
+            { nameJa: "黒毛和牛 赤身焼肉", nameZh: "黑毛和牛 瘦肉烤肉", price: 1408 }
+        ]
+    },
+    {
+        category: "ステーキ (牛排)",
+        items: [
+            { nameJa: "ワンカルビ", nameZh: "特选牛小排", price: 957 },
+            { nameJa: "厚切り上ロースステーキ", nameZh: "厚切上等里脊牛排", price: 1034 },
+            { nameJa: "ハラミステーキ ～トリュフ香る贅沢ソースで～", nameZh: "横隔膜牛排 ～配松露香奢华酱汁～", price: 880 }
+        ]
+    },
+    {
+        category: "焼きすき 軽く炙るように焼いて生玉子に付けるすき焼きスタイル (烤寿喜烧 轻烤后蘸生鸡蛋的寿喜烧风格)",
+        items: [
+            { nameJa: "上カルビ焼きすき（生玉子付き）", nameZh: "上等牛小排烤寿喜烧（配生鸡蛋）", price: 880 },
+            { nameJa: "上ロース焼きすき（生玉子付き）", nameZh: "上等里脊烤寿喜烧（配生鸡蛋）", price: 880 }
+        ]
+    },
+    {
+        category: "焼肉 (烤肉)",
+        items: [
+            { nameJa: "カルビ", nameZh: "牛小排", price: 781 },
+            { nameJa: "上カルビ", nameZh: "上等牛小排", price: 880 },
+            { nameJa: "角切りカルビ", nameZh: "方块牛小排", price: 880 },
+            { nameJa: "やわらかハラミ", nameZh: "嫩横隔膜（经过嫩化处理，请烤至全熟）", price: 781 },
+            { nameJa: "厚切りハラミ", nameZh: "厚切横隔膜", price: 825 },
+            { nameJa: "上ロース", nameZh: "上等里脊", price: 880 },
+            { nameJa: "ロース", nameZh: "里脊", price: 781 }
+        ]
+    },
+    {
+        category: "ラム・豚肉・鶏肉 (羊肉・猪肉・鸡肉)",
+        items: [
+            { nameJa: "豪州産 塩ラムランプ", nameZh: "澳洲产 盐味羊臀肉", price: 880 },
+            { nameJa: "塩豚カタロースステーキ", nameZh: "盐味猪肩里脊牛排", price: 605 },
+            { nameJa: "手羽元せせり （塩）", nameZh: "鸡翅根颈肉（盐味）", price: 561 },
+            { nameJa: "せせり （タレ・塩）", nameZh: "鸡颈肉（酱汁・盐味）", price: 561 },
+            { nameJa: "鶏もも", nameZh: "鸡腿肉", price: 407 },
+            { nameJa: "にんにく塩 鶏もも", nameZh: "蒜盐鸡腿肉", price: 407 }
+        ]
+    },
+    {
+        category: "ホルモン (内脏)",
+        items: [
+            { nameJa: "サンドミノ", nameZh: "三层肚", price: 605 },
+            { nameJa: "レバー", nameZh: "肝脏", price: 429 },
+            { nameJa: "赤せんまい", nameZh: "红肚", price: 561 },
+            { nameJa: "コリコリ", nameZh: "脆骨", price: 418 },
+            { nameJa: "てっちゃん", nameZh: "小肠", price: 605 },
+            { nameJa: "ホルモン", nameZh: "混合内脏", price: 484 },
+            { nameJa: "上ミノ", nameZh: "上等肚", price: 605 },
+            { nameJa: "ハチノス", nameZh: "牛百叶", price: 506 }
+        ]
+    },
+    {
+        category: "旨辛だれ (美味辣酱)",
+        items: [
+            { nameJa: "旨辛だれ サンドミノ", nameZh: "美味辣酱 三层肚", price: 605 },
+            { nameJa: "旨辛だれ コリコリ", nameZh: "美味辣酱 脆骨", price: 418 },
+            { nameJa: "旨辛だれ ホルモン", nameZh: "美味辣酱 混合内脏", price: 484 },
+            { nameJa: "旨辛だれ 赤せんまい", nameZh: "美味辣酱 红肚", price: 561 },
+            { nameJa: "旨辛だれ ハチノス", nameZh: "美味辣酱 牛百叶", price: 506 },
+            { nameJa: "旨辛だれ てっちゃん", nameZh: "美味辣酱 小肠", price: 605 },
+            { nameJa: "旨辛だれ 上ミノ", nameZh: "美味辣酱 上等肚", price: 605 }
+        ]
+    },
+    {
+        category: "にんにく塩だれ (蒜盐酱)",
+        items: [
+            { nameJa: "にんにく塩 サンドミノ", nameZh: "蒜盐 三层肚", price: 605 },
+            { nameJa: "にんにく塩 やわらかハラミ", nameZh: "蒜盐 嫩横隔膜（经过嫩化处理，请烤至全熟）", price: 781 },
+            { nameJa: "にんにく塩 鶏もも", nameZh: "蒜盐 鸡腿肉", price: 407 },
+            { nameJa: "にんにく塩 コリコリ", nameZh: "蒜盐 脆骨", price: 418 },
+            { nameJa: "にんにく塩 ホルモン", nameZh: "蒜盐 混合内脏", price: 484 },
+            { nameJa: "にんにく塩 赤せんまい", nameZh: "蒜盐 红肚", price: 561 },
+            { nameJa: "にんにく塩 てっちゃん", nameZh: "蒜盐 小肠", price: 605 },
+            { nameJa: "にんにく塩 上ミノ", nameZh: "蒜盐 上等肚", price: 605 },
+            { nameJa: "にんにく塩 タン", nameZh: "蒜盐 猪舌（精选猪肉制作，经过整形加工）", price: 737 },
+            { nameJa: "にんにく塩 カルビ", nameZh: "蒜盐 牛小排", price: 781 },
+            { nameJa: "にんにく塩 厚切りハラミ", nameZh: "蒜盐 厚切横隔膜", price: 825 },
+            { nameJa: "にんにく塩 角切りカルビ", nameZh: "蒜盐 方块牛小排", price: 880 },
+            { nameJa: "にんにく塩 上カルビ", nameZh: "蒜盐 上等牛小排", price: 880 }
+        ]
+    },
+    {
+        category: "焼きもの/焼き野菜 (烤物/烤蔬菜)",
+        items: [
+            { nameJa: "特製ウインナー", nameZh: "特制香肠", price: 462 },
+            { nameJa: "天然赤えび", nameZh: "天然红虾", price: 462 },
+            { nameJa: "にんにくホイル焼き", nameZh: "蒜蓉锡纸烧", price: 462 },
+            { nameJa: "焼野菜の盛合せ", nameZh: "烤蔬菜拼盘", price: 583 }
+        ]
+    },
+    {
+        category: "すぐ出る一品 (即时小菜)",
+        items: [
+            { nameJa: "あさりのキムチ", nameZh: "蛤蜊泡菜", price: 385 },
+            { nameJa: "鶏皮ポン酢", nameZh: "鸡皮柚子醋", price: 385 },
+            { nameJa: "キャベツときゅうりのピリ辛肉マヨ味噌", nameZh: "辣味卷心菜黄瓜肉末蛋黄酱味噌", price: 440 },
+            { nameJa: "韓国のり", nameZh: "韩国海苔", price: 143 },
+            { nameJa: "枝豆", nameZh: "毛豆", price: 330 }
+        ]
+    },
+    {
+        category: "前菜 (前菜)",
+        items: [
+            { nameJa: "くせになるキュウリ", nameZh: "上瘾黄瓜", price: 341 },
+            { nameJa: "豆もやしナムル", nameZh: "豆芽菜沙拉", price: 385 },
+            { nameJa: "ナムル盛合せ", nameZh: "韩式凉拌菜拼盘", price: 550 },
+            { nameJa: "白菜キムチ", nameZh: "白菜泡菜", price: 385 },
+            { nameJa: "オイキムチ", nameZh: "黄瓜泡菜", price: 385 },
+            { nameJa: "カクテキ", nameZh: "萝卜块泡菜", price: 385 },
+            { nameJa: "キムチ盛合せ", nameZh: "泡菜拼盘", price: 649 },
+            { nameJa: "とうもろこしチヂミ", nameZh: "玉米煎饼", price: 528 },
+            { nameJa: "海鮮チヂミ", nameZh: "海鲜煎饼", price: 528 }
+        ]
+    },
+    {
+        category: "逸品 (特色菜品)",
+        items: [
+            { nameJa: "明太ポテトのチーズ焼き", nameZh: "明太子土豆芝士烤", price: 649 },
+            { nameJa: "牛骨スープの野菜たっぷり炊き肉", nameZh: "牛骨汤蔬菜丰富炖肉", price: 649 },
+            { nameJa: "ローストビーフユッケ風", nameZh: "韩式生拌烤牛肉", price: 649 },
+            { nameJa: "さっぱりオニオンスライス 卵黄のせ", nameZh: "清爽洋葱片配蛋黄", price: 550 },
+            { nameJa: "牛すじのどて煮", nameZh: "牛筋味噌炖", price: 583 }
+        ]
+    },
+{
+        category: "新鮮野菜のサラダ (新鲜蔬菜沙拉)",
+        items: [
+            { nameJa: "オリーブとほうれん草のミモザ風グリーンサラダ", nameZh: "橄榄菠菜蛋黄酱绿色沙拉", price: 616 },
+            { nameJa: "チシャ菜 （味噌付き）", nameZh: "莴苣叶（配味噌）", price: 363 },
+            { nameJa: "蟹とビーツと木の実の赤いサラダ", nameZh: "蟹肉甜菜根坚果红色沙拉", price: 616 }
+        ]
+    },
+    {
+        category: "ご飯もの 厳選の国産米を使用しています。(米饭类 使用精选国产大米)",
+        items: [
+            { nameJa: "石焼エビチリ炒飯", nameZh: "石锅辣椒虾仁炒饭", price: 825 },
+            { nameJa: "石焼ビビンバ", nameZh: "石锅拌饭", price: 825 },
+            { nameJa: "焦がしニンニク香る石焼ガーリックライス", nameZh: "香烤蒜味石锅蒜香饭", price: 825 },
+            { nameJa: "ビビンバ", nameZh: "拌饭", price: 583 },
+            { nameJa: "クッパ", nameZh: "韩式牛肉泡饭", price: 561 },
+            { nameJa: "こだわりご飯 ［小］", nameZh: "精选米饭 [小]", price: 308 },
+            { nameJa: "こだわりご飯 ［中］", nameZh: "精选米饭 [中]", price: 363 },
+            { nameJa: "こだわりご飯 ［大］", nameZh: "精选米饭 [大]", price: 418 }
+        ]
+    },
+    {
+        category: "麺 / スープ (面 / 汤)",
+        items: [
+            { nameJa: "国産とろろの冷やし山かけうどん", nameZh: "国产山药泥凉拌乌冬面", price: 605 },
+            { nameJa: "名物 韓国冷麺", nameZh: "招牌 韩式冷面", price: 792 },
+            { nameJa: "玉子スープ", nameZh: "蛋花汤", price: 363 },
+            { nameJa: "わかめスープ", nameZh: "海带汤", price: 363 },
+            { nameJa: "わか玉スープ", nameZh: "海带蛋花汤", price: 418 },
+            { nameJa: "名物 ユッケジャンスープ", nameZh: "招牌 辣牛肉汤", price: 528 },
+            { nameJa: "スンドゥブ（豆腐チゲ）", nameZh: "嫩豆腐汤（豆腐锅）", price: 649 }
+        ]
+    },
+    {
+        category: "デザート (甜点)",
+        items: [
+            { nameJa: "蜂蜜りんごと塩キャラメルケーキのパフェ", nameZh: "蜂蜜苹果和盐味焦糖蛋糕冰淇淋圣代", price: 528, note: "※香り付けに洋酒を使用しています。" },
+            { nameJa: "ブリュレパンケーキのスイートポテトクリーム添え", nameZh: "焦糖布丁煎饼配甜土豆奶油", price: 528 },
+            { nameJa: "濃厚クレームブリュレ", nameZh: "浓郁焦糖布丁", price: 418 },
+            { nameJa: "フレッシュオレンジとレモンシャーベット", nameZh: "新鲜橙子和柠檬冰沙", price: 484 },
+            { nameJa: "濃厚バニラジェラート", nameZh: "浓郁香草冰淇淋", price: 352 },
+            { nameJa: "自家製 杏仁豆腐", nameZh: "自制杏仁豆腐", price: 484 }
+        ]
+    }
+];
+
+
+        const menuContainer = document.getElementById('menu-container');
+        const totalElement = document.getElementById('total');
+
+        let total = 0;
+
+        function updateTotal() {
+            totalElement.textContent = `总计: ${total} 円`;
+        }
+
+        function createMenuItem(item, tbody) {
+            const row = tbody.insertRow();
+            row.insertCell(0).textContent = item.nameJa;
+            row.insertCell(1).textContent = item.nameZh;
+            row.insertCell(2).textContent = `${item.price} 円`;
+            const quantityCell = row.insertCell(3);
+            quantityCell.textContent = '0';
+            const actionCell = row.insertCell(4);
+            
+            const addButton = document.createElement('button');
+            addButton.textContent = '+';
+            addButton.onclick = function() {
+                const currentQuantity = parseInt(quantityCell.textContent);
+                quantityCell.textContent = currentQuantity + 1;
+                total += item.price;
+                updateTotal();
+            };
+            
+            const removeButton = document.createElement('button');
+            removeButton.textContent = '-';
+            removeButton.onclick = function() {
+                const currentQuantity = parseInt(quantityCell.textContent);
+                if (currentQuantity > 0) {
+                    quantityCell.textContent = currentQuantity - 1;
+                    total -= item.price;
+                    updateTotal();
+                }
+            };
+            
+            actionCell.appendChild(addButton);
+            actionCell.appendChild(removeButton);
+        }
+
+        function createCategoryTable(category) {
+            const table = document.createElement('table');
+            const thead = table.createTHead();
+            const headerRow = thead.insertRow();
+            const headerCell = headerRow.insertCell();
+            headerCell.colSpan = 5;
+            headerCell.textContent = category.category;
+            headerCell.className = 'category-header';
+            
+            const tbody = table.createTBody();
+            tbody.className = 'category-content';
+            
+            const subHeaderRow = tbody.insertRow();
+            ['日本語', '中文', '価格', '数量', '操作'].forEach(text => {
+                const cell = subHeaderRow.insertCell();
+                cell.textContent = text;
+                cell.style.fontWeight = 'bold';
+            });
+
+            category.items.forEach(item => createMenuItem(item, tbody));
+            
+            headerCell.onclick = function() {
+                tbody.classList.toggle('show');
+            };
+
+            return table;
+        }
+
+        menu.forEach(category => {
+            const categoryTable = createCategoryTable(category);
+            menuContainer.appendChild(categoryTable);
+        });
+    </script>
+</body>
+</html>
